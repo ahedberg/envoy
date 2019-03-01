@@ -382,9 +382,6 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::HeaderMap& headers, bool e
 
   upstream_request_ = std::make_unique<UpstreamRequest>(*this, *conn_pool);
   upstream_request_->encodeHeaders(end_stream);
-  if (end_stream) {
-    onRequestComplete();
-  }
 
   return Http::FilterHeadersStatus::StopIteration;
 }
@@ -439,10 +436,6 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_strea
     upstream_request_->encodeData(data, end_stream);
   }
 
-  if (end_stream) {
-    onRequestComplete();
-  }
-
   return Http::FilterDataStatus::StopIterationNoBuffer;
 }
 
@@ -450,7 +443,6 @@ Http::FilterTrailersStatus Filter::decodeTrailers(Http::HeaderMap& trailers) {
   ENVOY_STREAM_LOG(debug, "router decoding trailers:\n{}", *callbacks_, trailers);
   downstream_trailers_ = &trailers;
   upstream_request_->encodeTrailers(trailers);
-  onRequestComplete();
   return Http::FilterTrailersStatus::StopIteration;
 }
 
@@ -490,7 +482,7 @@ void Filter::maybeDoShadowing() {
                                 timeout_.global_timeout_);
 }
 
-void Filter::onRequestComplete() {
+void Filter::decodeComplete() {
   downstream_end_stream_ = true;
   Event::Dispatcher& dispatcher = callbacks_->dispatcher();
   downstream_request_complete_time_ = dispatcher.timeSource().monotonicTime();
