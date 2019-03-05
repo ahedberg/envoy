@@ -163,6 +163,7 @@ public:
   Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
   Http::FilterTrailersStatus decodeTrailers(Http::HeaderMap& trailers) override;
   void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override;
+  void decodeComplete() override;
 
   // Upstream::LoadBalancerContext
   absl::optional<uint64_t> computeHashKey() override {
@@ -371,7 +372,6 @@ private:
                                          Upstream::ResourcePriority priority) PURE;
   Http::ConnectionPool::Instance* getConnPool();
   void maybeDoShadowing();
-  void onRequestComplete();
   void onResponseTimeout();
   void onUpstream100ContinueHeaders(Http::HeaderMapPtr&& headers);
   void onUpstreamHeaders(uint64_t response_code, Http::HeaderMapPtr&& headers, bool end_stream);
